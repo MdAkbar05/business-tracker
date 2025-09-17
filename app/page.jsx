@@ -177,7 +177,7 @@ export default function AccountsApp() {
 
             <div className="flex justify-between items-center flex-wrap gap-6">
               {/* Costs */}
-              <div className="bg-red-900/40 p-4 rounded-lg flex-4/12 min-w-sm">
+              <div className="bg-red-900/40 p-4 rounded-lg flex-4/12 min-w-44">
                 <h3 className="font-semibold mb-3">Costs</h3>
                 {acc.costs.map((c) => (
                   <div
@@ -197,7 +197,7 @@ export default function AccountsApp() {
               </div>
 
               {/* Saves */}
-              <div className="bg-green-900/40 p-4 rounded-lg flex-4/12 min-w-sm">
+              <div className="bg-green-900/40 p-4 rounded-lg flex-4/12 min-w-44">
                 <h3 className="font-semibold mb-3">Saves</h3>
                 {acc.saves.map((s) => (
                   <div
@@ -217,7 +217,7 @@ export default function AccountsApp() {
               </div>
 
               {/* Extras */}
-              <div className="bg-yellow-900/40 p-4 rounded-lg flex-4/12 min-w-sm">
+              <div className="bg-yellow-900/40 p-4 rounded-lg flex-4/12 min-w-44">
                 <h3 className="font-semibold mb-3">Extras</h3>
                 {acc.extras.map((e) => (
                   <div
