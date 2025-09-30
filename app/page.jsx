@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Costs from "./components/Costs";
 import Saves from "./components/Saves";
 import Extras from "./components/Extras";
+import AccountSkeleton from "./components/AccountSkeleton";
 
 export default function AccountsApp() {
   const [accountsData, setAccountsData] = useState({
@@ -11,6 +12,7 @@ export default function AccountsApp() {
     error: null,
   });
 
+  const [searchDate, setSearchDate] = useState("");
   const [user, setUser] = useState(null); // logged-in user state
   const [showLogin, setShowLogin] = useState(false); // popup state
   const [loginForm, setLoginForm] = useState({
@@ -215,7 +217,9 @@ export default function AccountsApp() {
         0
       )
     : 0;
-  const totalRevenue = totalSave + totalExtra - totalCost;
+  let totalRevenue = totalSave + totalExtra - totalCost;
+  // negative number to positive number
+  totalRevenue = totalRevenue < 0 ? Math.abs(totalRevenue) : 0;
 
   // ✅ Show login popup if not logged in
   if (showLogin) {
@@ -286,9 +290,37 @@ export default function AccountsApp() {
     );
   }
 
+  // search handler
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    if (!searchDate) return;
+    setAccountsData({ isLoading: true, data: null, error: null });
+
+    try {
+      const res = await fetch(
+        `/api/accounts/search?date=${searchDate}&userId=${user.id}`
+      );
+      const data = await res.json();
+      if (res.ok) {
+        setAccountsData({
+          isLoading: false,
+          data,
+          error: null,
+        });
+        console.log(accountsData.isLoading);
+      } else {
+        alert(data.error || "No account found & Show all data");
+        fetchAccounts();
+        console.log(accountsData.isLoading);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 text-white p-6">
-      <div className="flex justify-center items-center mb-6 gap-4">
+      <div className="flex flex-col md:flex-row justify-center items-center mb-6 gap-4">
         <h1 className="text-3xl font-bold  text-center">
           Business Tracker | {user?.name}
         </h1>
@@ -298,6 +330,23 @@ export default function AccountsApp() {
         >
           Logout
         </button>
+      </div>
+      {/* 🔍 Search by Date */}
+      <div className="flex justify-center items-center">
+        <form onSubmit={handleSearch} className="mb-6 flex gap-4">
+          <input
+            type="date"
+            value={searchDate}
+            onChange={(e) => setSearchDate(e.target.value)}
+            className="border p-2 rounded bg-gray-700 text-white"
+          />
+          <button
+            type="submit"
+            className="bg-blue-600 px-3 py-2 rounded hover:bg-blue-500"
+          >
+            Search
+          </button>
+        </form>
       </div>
 
       {/* Summary */}
@@ -315,34 +364,29 @@ export default function AccountsApp() {
           <p className="text-2xl font-bold">{totalExtra}</p>
         </div>
         <div className="bg-blue-700 p-4 rounded-xl text-center flex-2/12 min-w-44">
-          <h2 className="text-lg font-semibold">Net Revenue</h2>
+          <h2 className="text-lg font-semibold">Sell Revenue</h2>
           <p className="text-2xl font-bold">{totalRevenue}</p>
         </div>
       </div>
 
       {/* Accounts */}
       <div className="space-y-6">
-        {accountsData.data?.length > 0 &&
+        {accountsData.data?.length > 0 ? (
           accountsData.data.map((acc) => (
             <div key={acc.id} className="bg-gray-800 rounded-xl p-6 shadow">
               <div className="flex justify-between items-center border-b border-gray-600 pb-2 mb-4">
-                <h2 className="text-xl font-bold">Account Date: {acc.date}</h2>
-                <div className="space-x-2">
-                  <button
-                    onClick={() => saveAccount(user.id, acc.id)}
-                    className="text-green-400 hover:text-green-600 font-bold text-lg"
-                  >
-                    Save
-                  </button>
-                  <button
-                    onClick={() => removeAccount(user.id, acc.id)}
-                    className="text-red-400 hover:text-red-600 font-bold text-lg"
-                  >
-                    ✖
-                  </button>
-                </div>
+                <h2 className="text-xl font-bold whitespace-nowrap">
+                  Account Date: <br /> {acc.date}
+                </h2>
+
+                <button
+                  onClick={() => removeAccount(user.id, acc.id)}
+                  className="text-red-300 hover:bg-red-600 font-bold text-lg px-2 py-1 rounded bg-red-500 cursor-pointer whitespace-nowrap"
+                >
+                  Delete ✖
+                </button>
               </div>
-              <div className="grid grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Costs */}
                 <div className="bg-red-900/40 p-4 rounded-lg">
                   <h3 className="font-semibold mb-3">Costs</h3>
@@ -385,7 +429,7 @@ export default function AccountsApp() {
               {/* Add entry form */}
               <div className="mt-6 p-4 border border-gray-600 rounded-lg">
                 <h3 className="mb-3 font-semibold">Add Entry</h3>
-                <div className="grid grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   <input
                     type="text"
                     placeholder="Description"
@@ -422,7 +466,16 @@ export default function AccountsApp() {
                 </div>
               </div>
             </div>
-          ))}
+          ))
+        ) : (
+          <AccountSkeleton />
+        )}
+        {accountsData.data?.length === 0 && (
+          <div className="bg-gray-800 rounded-xl p-6 shadow">
+            <h2 className="text-lg font-semibold mb-3">No accounts found</h2>
+            <p className="text-gray-400">Add an account to get started</p>
+          </div>
+        )}
       </div>
 
       {/* Add new account */}
