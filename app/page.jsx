@@ -1,9 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
-import Costs from "./components/Costs";
-import Saves from "./components/Saves";
-import Extras from "./components/Extras";
-import AccountSkeleton from "./components/AccountSkeleton";
+
+import LogoutButton from "./components/LogoutButton";
+import AccountsList from "./components/AccountsList";
+import LoginPopup from "./components/LoginPopup";
+import Loader from "./components/Loader";
 
 export default function AccountsApp() {
   const [accountsData, setAccountsData] = useState({
@@ -11,6 +12,9 @@ export default function AccountsApp() {
     data: null,
     error: null,
   });
+  const [isCreating, setIsCreating] = useState(false); // for creating account
+  const [isDeleting, setIsDeleting] = useState(false); // for deleting account
+  const [isRemoving, setIsRemoving] = useState(false); // for removing entry
 
   const [searchDate, setSearchDate] = useState("");
   const [user, setUser] = useState(null); // logged-in user state
@@ -23,11 +27,6 @@ export default function AccountsApp() {
 
   const [mode, setMode] = useState("login");
 
-  const [form, setForm] = useState({
-    description: "",
-    amount: "",
-    type: "cost",
-  });
   const [dateInput, setDateInput] = useState("");
 
   // ✅ Load user from localStorage at first
@@ -53,6 +52,7 @@ export default function AccountsApp() {
       .catch((error) =>
         setAccountsData({ isLoading: false, data: null, error })
       );
+    setIsCreating(false);
   };
 
   // ✅ Fetch accounts data if user exists
@@ -126,43 +126,45 @@ export default function AccountsApp() {
   // ✅ Add new account
   const addAccount = async (userId) => {
     if (!dateInput) return;
-    const res = await fetch("/api/accounts", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, date: dateInput }),
-    });
+    setIsCreating(true);
+    try {
+      const res = await fetch("/api/accounts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, date: dateInput }),
+      });
+      const data = await res.json();
 
-    const data = await res.json();
-    if (data?.status === 400) {
-      alert(data?.error);
-    } else {
-      fetchAccounts();
+      if (data?.status === 400) {
+        alert(data?.error);
+      } else {
+        fetchAccounts();
+      }
+      setDateInput("");
+    } catch (error) {
+      console.error(error);
     }
-
-    // Your API call to add new account here
-    setDateInput("");
   };
 
   // ✅ Remove account
   const removeAccount = async (userId, accountId) => {
-    // Your API call here
-    if (!window.confirm("Are you sure you want to delete this account?"))
-      return;
+    setIsDeleting(true);
     const res = await fetch(`/api/accounts/${accountId}`, {
       method: "DELETE",
     });
     const data = await res.json();
-    console.log(data);
     setAccountsData((prev) => {
       return {
         ...prev,
         data: prev.data.filter((acc) => acc.id !== accountId),
       };
     });
+    setIsDeleting(false);
   };
 
   // ✅ Add entry
-  const addEntry = async (accountId) => {
+  const addEntry = async (accountId, form) => {
+    setIsCreating(true);
     if (!form.description || !form.amount) return;
     const res = await fetch(`/api/accounts/${accountId}`, {
       method: "PUT",
@@ -178,19 +180,19 @@ export default function AccountsApp() {
     if (data?.status === 404) {
       alert(data?.error);
     } else {
+      setIsCreating(false);
       fetchAccounts();
     }
-    // Your API call to add entry here
-    setForm({ description: "", amount: "", type: "cost" });
   };
 
   // ✅ Remove item
   const removeItem = async (accountId, type, itemId) => {
+    setIsRemoving(true);
     const res = await fetch(`/api/accounts/${accountId}/${type}/${itemId}`, {
       method: "DELETE",
     });
     fetchAccounts();
-    // Your API call here
+    setIsRemoving(false);
   };
 
   const totalCost = accountsData.data
@@ -224,69 +226,13 @@ export default function AccountsApp() {
   // ✅ Show login popup if not logged in
   if (showLogin) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-black/70">
-        <form
-          onSubmit={handleSubmit}
-          className="bg-gray-800 p-6 rounded-xl w-96"
-        >
-          <h2 className="text-xl font-bold mb-4 text-center">
-            {mode === "login" ? "Login" : "Create Account"}
-          </h2>
-          {mode === "create" && (
-            <input
-              type="name"
-              placeholder="name"
-              required
-              value={loginForm.name}
-              onChange={(e) =>
-                setLoginForm({ ...loginForm, name: e.target.value })
-              }
-              className="w-full mb-3 p-2 rounded bg-gray-700 text-white"
-            />
-          )}
-          <input
-            type="email"
-            placeholder="Email"
-            required
-            value={loginForm.email}
-            onChange={(e) =>
-              setLoginForm({ ...loginForm, email: e.target.value })
-            }
-            className="w-full mb-3 p-2 rounded bg-gray-700 text-white"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            required
-            value={loginForm.password}
-            onChange={(e) =>
-              setLoginForm({ ...loginForm, password: e.target.value })
-            }
-            className="w-full mb-4 p-2 rounded bg-gray-700 text-white"
-          />
-          <button
-            type="submit"
-            className="w-full bg-blue-600 py-2 rounded hover:bg-blue-500"
-          >
-            {mode === "login" ? "Login" : "Create Account"}
-          </button>
-          {mode === "login" ? (
-            <button
-              onClick={() => setMode("create")}
-              className=" w-full bg-green-600 py-2 rounded hover:bg-green-500 mt-2"
-            >
-              Create Account
-            </button>
-          ) : (
-            <button
-              onClick={() => setMode("login")}
-              className=" w-full bg-green-600 py-2 rounded hover:bg-green-500 mt-2"
-            >
-              Login Account
-            </button>
-          )}
-        </form>
-      </div>
+      <LoginPopup
+        mode={mode}
+        setMode={setMode}
+        loginForm={loginForm}
+        setLoginForm={setLoginForm}
+        handleSubmit={handleSubmit}
+      />
     );
   }
 
@@ -307,11 +253,9 @@ export default function AccountsApp() {
           data,
           error: null,
         });
-        console.log(accountsData.isLoading);
       } else {
         alert(data.error || "No account found & Show all data");
         fetchAccounts();
-        console.log(accountsData.isLoading);
       }
     } catch (error) {
       console.error(error);
@@ -324,25 +268,39 @@ export default function AccountsApp() {
         <h1 className="text-3xl font-bold  text-center">
           Business Tracker | {user?.name}
         </h1>
-        <button
-          onClick={handleLogout}
-          className="bg-red-600 px-3 py-2 rounded hover:bg-red-500"
-        >
-          Logout
-        </button>
+        <LogoutButton onClick={handleLogout} />
       </div>
       {/* 🔍 Search by Date */}
       <div className="flex justify-center items-center">
-        <form onSubmit={handleSearch} className="mb-6 flex gap-4">
-          <input
-            type="date"
-            value={searchDate}
-            onChange={(e) => setSearchDate(e.target.value)}
-            className="border p-2 rounded bg-gray-700 text-white"
-          />
+        <form
+          onSubmit={handleSearch}
+          className="mb-6 flex gap-3 justify-center items-center"
+        >
+          <div className="relative">
+            <input
+              type="date"
+              value={searchDate}
+              onChange={(e) => setSearchDate(e.target.value)}
+              className="
+        block w-52 px-4 py-2
+        bg-gray-50 text-gray-900
+        border border-gray-300 rounded-md
+        shadow-sm
+        focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600
+        transition-all duration-200
+      "
+            />
+          </div>
+
           <button
             type="submit"
-            className="bg-blue-600 px-3 py-2 rounded hover:bg-blue-500"
+            className="
+      bg-blue-600 text-white font-medium
+      px-4 py-2 rounded-md
+      hover:bg-blue-500
+      focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1
+      transition-colors duration-200
+    "
           >
             Search
           </button>
@@ -350,133 +308,39 @@ export default function AccountsApp() {
       </div>
 
       {/* Summary */}
-      <div className="flex justify-around items-center flex-wrap  gap-6 mb-8 ">
+      <div className="flex justify-around items-center flex-wrap gap-6 mb-8">
         <div className="bg-red-700 p-4 rounded-xl text-center flex-2/12 min-w-44">
-          <h2 className="text-lg font-semibold">Total Costs</h2>
+          <h2 className="text-lg font-semibold">Expenses</h2>
           <p className="text-2xl font-bold">{totalCost}</p>
         </div>
+
         <div className="bg-green-700 p-4 rounded-xl text-center flex-2/12 min-w-44">
-          <h2 className="text-lg font-semibold">Total Saves</h2>
+          <h2 className="text-lg font-semibold">Savings</h2>
           <p className="text-2xl font-bold">{totalSave}</p>
         </div>
+
         <div className="bg-yellow-600 p-4 rounded-xl text-center flex-2/12 min-w-44">
-          <h2 className="text-lg font-semibold">Total Extras</h2>
+          <h2 className="text-lg font-semibold">Additional Savings</h2>
           <p className="text-2xl font-bold">{totalExtra}</p>
         </div>
+
         <div className="bg-blue-700 p-4 rounded-xl text-center flex-2/12 min-w-44">
-          <h2 className="text-lg font-semibold">Sell Revenue</h2>
+          <h2 className="text-lg font-semibold">Net Revenue</h2>
           <p className="text-2xl font-bold">{totalRevenue}</p>
         </div>
       </div>
 
       {/* Accounts */}
-      <div className="space-y-6">
-        {accountsData.data?.length > 0 ? (
-          accountsData.data.map((acc) => (
-            <div key={acc.id} className="bg-gray-800 rounded-xl p-6 shadow">
-              <div className="flex justify-between items-center border-b border-gray-600 pb-2 mb-4">
-                <h2 className="text-xl font-bold whitespace-nowrap">
-                  Account Date: <br /> {acc.date}
-                </h2>
-
-                <button
-                  onClick={() => removeAccount(user.id, acc.id)}
-                  className="text-red-300 hover:bg-red-600 font-bold text-lg px-2 py-1 rounded bg-red-500 cursor-pointer whitespace-nowrap"
-                >
-                  Delete ✖
-                </button>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* Costs */}
-                <div className="bg-red-900/40 p-4 rounded-lg">
-                  <h3 className="font-semibold mb-3">Costs</h3>
-                  {acc.costs.map((c) => (
-                    <Costs key={c.id} acc={acc} c={c} onRemove={removeItem} />
-                  ))}
-                  <hr className="my-2 border-gray-600" />
-                  <p className="font-semibold text-lg mt-2">
-                    Total: {acc.costs.reduce((a, c) => a + c.amount, 0)}
-                  </p>
-                </div>
-
-                {/* Saves */}
-                <div className="bg-green-900/40 p-4 rounded-lg">
-                  <h3 className="font-semibold mb-3">Saves</h3>
-                  {acc.saves.map((s) => (
-                    <Saves key={s.id} acc={acc} s={s} onRemove={removeItem} />
-                  ))}
-                  <hr className="my-2 border-gray-600" />
-                  <p className="font-semibold text-lg mt-2">
-                    Total: {acc.saves.reduce((a, c) => a + c.amount, 0)}
-                  </p>
-                </div>
-
-                {/* Extras */}
-                <div className="bg-yellow-900/40 p-4 rounded-lg">
-                  <h3 className="font-semibold mb-3">Extras</h3>
-                  {acc.extras.map((e) => (
-                    <Extras key={e.id} acc={acc} e={e} onRemove={removeItem} />
-                  ))}
-                  <hr className="my-2 border-gray-600" />
-                  <p className="font-semibold text-lg mt-2">
-                    Total: {acc.extras.reduce((a, c) => a + c.amount, 0)}
-                  </p>
-                </div>
-              </div>
-
-              {/* Costs / Saves / Extras go here */}
-              {/* same as before, but now use user.id */}
-              {/* Add entry form */}
-              <div className="mt-6 p-4 border border-gray-600 rounded-lg">
-                <h3 className="mb-3 font-semibold">Add Entry</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  <input
-                    type="text"
-                    placeholder="Description"
-                    value={form.description}
-                    onChange={(e) =>
-                      setForm({ ...form, description: e.target.value })
-                    }
-                    className="border p-2 rounded bg-gray-700 text-white"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Amount"
-                    value={form.amount}
-                    onChange={(e) =>
-                      setForm({ ...form, amount: e.target.value })
-                    }
-                    className="border p-2 rounded bg-gray-700 text-white"
-                  />
-                  <select
-                    value={form.type}
-                    onChange={(e) => setForm({ ...form, type: e.target.value })}
-                    className="border p-2 rounded bg-gray-700 text-white"
-                  >
-                    <option value="cost">Cost</option>
-                    <option value="save">Save</option>
-                    <option value="extra">Extra</option>
-                  </select>
-                  <button
-                    onClick={() => addEntry(acc.id)}
-                    className="bg-blue-600 px-3 py-2 rounded hover:bg-blue-500"
-                  >
-                    Add
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))
-        ) : (
-          <AccountSkeleton />
-        )}
-        {accountsData.data?.length === 0 && (
-          <div className="bg-gray-800 rounded-xl p-6 shadow">
-            <h2 className="text-lg font-semibold mb-3">No accounts found</h2>
-            <p className="text-gray-400">Add an account to get started</p>
-          </div>
-        )}
-      </div>
+      <AccountsList
+        accountsData={accountsData}
+        user={user}
+        removeAccount={removeAccount}
+        removeItem={removeItem}
+        addEntry={addEntry}
+        isDeleting={isDeleting}
+        isRemoving={isRemoving}
+        isCreating={isCreating}
+      />
 
       {/* Add new account */}
       <div className="mt-8 bg-gray-800 p-6 rounded-xl shadow">
@@ -491,8 +355,9 @@ export default function AccountsApp() {
           <button
             onClick={() => addAccount(user.id)}
             className="bg-green-600 px-3 py-2 rounded hover:bg-green-500"
+            disabled={isCreating}
           >
-            Add Account
+            {isCreating ? <Loader /> : "Add Account"}
           </button>
         </div>
       </div>
