@@ -40,14 +40,6 @@ Built with **Next.js 15, React 19, TailwindCSS, Prisma, and PostgreSQL**, it ens
 
 ---
 
-## 📸 Screenshots
-
-### 🔐 Authentication Pages
-![Login Page](https://raw.githubusercontent.com/MdAkbar05/business-tracker/refs/heads/main/presentation/login.png)
-![Register Page](https://raw.githubusercontent.com/MdAkbar05/business-tracker/refs/heads/main/presentation/register.png)
-
----
-
 ### 📊 Dashboard
 ![Dashboard Overview](https://raw.githubusercontent.com/MdAkbar05/business-tracker/refs/heads/main/presentation/Dashboar-loading.png)
 ![Dashboard Overview](https://raw.githubusercontent.com/MdAkbar05/business-tracker/refs/heads/main/presentation/Main-Dashboard.png)
@@ -63,7 +55,15 @@ Built with **Next.js 15, React 19, TailwindCSS, Prisma, and PostgreSQL**, it ens
 ### 📂 Costs, Savings & Additional Savings
 ![Track Costs, Savings, Additional Savings](https://raw.githubusercontent.com/MdAkbar05/business-tracker/refs/heads/main/presentation/track-cost-save-additional.png)
 
+---
 
+## 📸 Screenshots
+
+### 🔐 Authentication Pages
+![Login Page](https://raw.githubusercontent.com/MdAkbar05/business-tracker/refs/heads/main/presentation/login.png)
+![Register Page](https://raw.githubusercontent.com/MdAkbar05/business-tracker/refs/heads/main/presentation/register.png)
+
+---
 
 
 
