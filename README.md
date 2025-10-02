@@ -43,38 +43,47 @@ Built with **Next.js 15, React 19, TailwindCSS, Prisma, and PostgreSQL**, it ens
 ## 📸 Screenshots
 
 ### 🔐 Authentication Pages
-![Login Page](https://via.placeholder.com/800x400.png?text=Login+Page+Example)
-![Register Page](https://via.placeholder.com/800x400.png?text=Register+Page+Example)
+![Login Page](https://raw.githubusercontent.com/MdAkbar05/business-tracker/refs/heads/main/presentation/login.png)
+![Register Page](https://raw.githubusercontent.com/MdAkbar05/business-tracker/refs/heads/main/presentation/register.png)
 
 ---
 
 ### 📊 Dashboard
-![Dashboard Overview](https://via.placeholder.com/800x400.png?text=Dashboard+Overview)
+![Dashboard Overview](https://raw.githubusercontent.com/MdAkbar05/business-tracker/refs/heads/main/presentation/Dashboar-loading.png)
+![Dashboard Overview](https://raw.githubusercontent.com/MdAkbar05/business-tracker/refs/heads/main/presentation/Main-Dashboard.png)
 
 ---
 
 ### 💰 Account Management
-![Account List](https://via.placeholder.com/800x400.png?text=Account+List)
-![Add Account](https://via.placeholder.com/800x400.png?text=Add+Account)
+![Account List](https://raw.githubusercontent.com/MdAkbar05/business-tracker/refs/heads/main/presentation/multi-account-management.png)
+![Add Account](https://raw.githubusercontent.com/MdAkbar05/business-tracker/refs/heads/main/presentation/account-management.png)
 
 ---
 
 ### 📂 Costs, Savings & Additional Savings
-![Track Costs](https://via.placeholder.com/800x400.png?text=Track+Costs)
-![Track Savings](https://via.placeholder.com/800x400.png?text=Track+Savings)
-![Track Additional Savings](https://via.placeholder.com/800x400.png?text=Track+Additional+Savings)
-
----
-
-### 📅 Date Filter
-![Date Filter](https://via.placeholder.com/800x400.png?text=Date+Filter+Example)
-
----
+![Track Costs, Savings, Additional Savings](https://raw.githubusercontent.com/MdAkbar05/business-tracker/refs/heads/main/presentation/track-cost-save-additional.png)
 
 
-## 📦 Installation
 
-### 1️⃣ Clone the repository
-```bash
-git clone https://github.com/your-username/business-tracker.git
-cd business-tracker
+
+
+## 🏗️ Feature Implementation
+
+### 1. User Authentication & Security
+- Use bcrypt for password hashing before storing in PostgreSQL.
+- Add JWT or session-based authentication for secure user sessions.
+- Enable password recovery via email (forget password flow).
+
+### 2. Account Management
+- Allow users edit cost, save or extra of accounts.
+
+### 4. Dashboard & Net Revenue Calculation
+- Visualize data with charts (e.g., using Chart.js or Recharts).
+
+### 6. Data Security & Integrity
+- Validate all user input on both frontend and backend.
+
+### 7. Future Features
+- Add multi-user support for teams/businesses.
+- Export data to CSV or PDF.
+- Integrate notifications for important account changes.
