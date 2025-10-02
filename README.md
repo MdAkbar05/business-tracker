@@ -12,7 +12,7 @@
 **Business Tracker App** is a modern and user-friendly financial management application that helps individuals and businesses track **costs, savings, additional savings, and net revenue** with ease.  
 Built with **Next.js 15, React 19, TailwindCSS, Prisma, and PostgreSQL**, it ensures **secure account handling** and an intuitive interface.
 
-# Live in : https://business-tracker-one.vercel.app/
+### Live in: https://business-tracker-one.vercel.app/
 
 ---
 
