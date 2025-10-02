@@ -27,7 +27,7 @@ const DeleteButton = () => {
           x1={12}
         />
       </svg>
-      <svg width={16} fill="none" viewBox="0 0 33 39" className>
+      <svg width={16} fill="none" viewBox="0 0 33 39">
         <mask fill="white" id="path-1-inside-1_8_19">
           <path d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z" />
         </mask>

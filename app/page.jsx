@@ -12,13 +12,16 @@ export default function AccountsApp() {
     data: null,
     error: null,
   });
-  const [isCreating, setIsCreating] = useState(false); // for creating account
-  const [isDeleting, setIsDeleting] = useState(false); // for deleting account
-  const [isRemoving, setIsRemoving] = useState(false); // for removing entry
+  const [isCreating, setIsCreating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
 
-  const [searchDate, setSearchDate] = useState("");
-  const [user, setUser] = useState(null); // logged-in user state
-  const [showLogin, setShowLogin] = useState(false); // popup state
+  // ✅ set default date as today
+  const today = new Date().toISOString().split("T")[0];
+  const [searchDate, setSearchDate] = useState(today);
+
+  const [user, setUser] = useState(null);
+  const [showLogin, setShowLogin] = useState(false);
   const [loginForm, setLoginForm] = useState({
     name: "",
     email: "",
@@ -26,8 +29,7 @@ export default function AccountsApp() {
   });
 
   const [mode, setMode] = useState("login");
-
-  const [dateInput, setDateInput] = useState(getDate());
+  const [dateInput, setDateInput] = useState();
 
   // ✅ Load user from localStorage at first
   useEffect(() => {
@@ -40,19 +42,31 @@ export default function AccountsApp() {
   }, []);
 
   const fetchAccounts = async () => {
-    fetch("/api/accounts")
-      .then((res) => res.json())
-      .then((data) =>
-        setAccountsData({
-          isLoading: false,
-          data: data.filter((acc) => acc.user.id === user.id), // filter by user id
-          error: null,
-        })
-      )
-      .catch((error) =>
-        setAccountsData({ isLoading: false, data: null, error })
-      );
-    setIsCreating(false);
+    try {
+      const res = await fetch("/api/accounts");
+      const data = await res.json();
+
+      setAccountsData({
+        isLoading: false,
+        data: data.filter((acc) => {
+          // always filter by user
+          if (acc.user.id !== user.id) return false;
+
+          // only filter by date if searchDate exists
+          if (searchDate) {
+            return acc.date === searchDate;
+          }
+          return true;
+        }),
+        error: null,
+      });
+      setIsCreating(false);
+      setIsDeleting(false);
+    } catch (error) {
+      setAccountsData({ isLoading: false, data: null, error });
+      setIsCreating(false);
+      setIsDeleting(false);
+    }
   };
 
   // ✅ Fetch accounts data if user exists
@@ -164,7 +178,7 @@ export default function AccountsApp() {
 
   // ✅ Add entry
   const addEntry = async (accountId, form) => {
-    setIsCreating(true);
+    setIsRemoving(true);
     if (!form.description || !form.amount) return;
     const res = await fetch(`/api/accounts/${accountId}`, {
       method: "PUT",
@@ -180,7 +194,7 @@ export default function AccountsApp() {
     if (data?.status === 404) {
       alert(data?.error);
     } else {
-      setIsCreating(false);
+      setIsRemoving(false);
       fetchAccounts();
     }
   };
@@ -239,10 +253,14 @@ export default function AccountsApp() {
   // search handler
   const handleSearch = async (e) => {
     e.preventDefault();
-    if (!searchDate) return;
     setAccountsData({ isLoading: true, data: null, error: null });
 
     try {
+      // if searchDate is cleared → fetch all for this user
+      if (!searchDate) {
+        fetchAccounts();
+        return;
+      }
       const res = await fetch(
         `/api/accounts/search?date=${searchDate}&userId=${user.id}`
       );
@@ -308,25 +326,41 @@ export default function AccountsApp() {
       </div>
 
       {/* Summary */}
-      <div className="flex justify-around items-center flex-wrap gap-6 mb-8">
-        <div className="bg-red-700 p-4 rounded-xl text-center flex-2/12 min-w-44">
-          <h2 className="text-lg font-semibold">Expenses</h2>
-          <p className="text-2xl font-bold">{totalCost}</p>
+      <div className="flex justify-around items-center flex-wrap md:gap-6 gap-3 md:mb-8 mb-4">
+        <div className="bg-red-700 p-1 md:p-4 rounded-xl text-center flex-2/12 min-w-44">
+          <h2 className="md:text-lg text-sm md:font-semibold font-medium">
+            Expenses
+          </h2>
+          <p className="md:text-2xl text-lg md:font-bold font-semibold">
+            {totalCost}
+          </p>
         </div>
 
-        <div className="bg-green-700 p-4 rounded-xl text-center flex-2/12 min-w-44">
-          <h2 className="text-lg font-semibold">Savings</h2>
-          <p className="text-2xl font-bold">{totalSave}</p>
+        <div className="bg-green-700 p-1 md:p-4 rounded-xl text-center flex-2/12 min-w-44">
+          <h2 className="md:text-lg text-sm md:font-semibold font-medium">
+            Savings
+          </h2>
+          <p className="md:text-2xl text-lg md:font-bold font-semibold">
+            {totalSave}
+          </p>
         </div>
 
-        <div className="bg-yellow-600 p-4 rounded-xl text-center flex-2/12 min-w-44">
-          <h2 className="text-lg font-semibold">Additional Savings</h2>
-          <p className="text-2xl font-bold">{totalExtra}</p>
+        <div className="bg-yellow-600 p-1 md:p-4 rounded-xl text-center flex-2/12 min-w-44">
+          <h2 className="md:text-lg text-sm md:font-semibold font-medium">
+            Additional Savings
+          </h2>
+          <p className="md:text-2xl text-lg md:font-bold font-semibold">
+            {totalExtra}
+          </p>
         </div>
 
-        <div className="bg-blue-700 p-4 rounded-xl text-center flex-2/12 min-w-44">
-          <h2 className="text-lg font-semibold">Net Revenue</h2>
-          <p className="text-2xl font-bold">{totalRevenue}</p>
+        <div className="bg-blue-700 p-1 md:p-4 rounded-xl text-center flex-2/12 min-w-44">
+          <h2 className="md:text-lg text-sm md:font-semibold font-medium">
+            Net Revenue
+          </h2>
+          <p className="md:text-2xl text-lg md:font-bold font-semibold">
+            {totalRevenue}
+          </p>
         </div>
       </div>
 
@@ -363,23 +397,4 @@ export default function AccountsApp() {
       </div>
     </div>
   );
-}
-
-const getDate = ()=>{
-const today = new Date();
-
-let month = today.getMonth() + 1; // Months are 0-indexed, so add 1
-let day = today.getDate();
-const year = today.getFullYear();
-
-// Add leading zero if month or day is less than 10
-if (month < 10) {
-  month = '0' + month;
-}
-if (day < 10) {
-  day = '0' + day;
-}
-
-const formattedDate = `${month}/${day}/${year}`;
-   return formattedDate;
 }

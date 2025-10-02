@@ -28,7 +28,7 @@ export default function AccountsList({
   };
   return (
     <div className="space-y-6">
-      {accountsData.data?.length > 0 && !isDeleting && !isCreating ? (
+      {accountsData.data?.length > 0 &&
         accountsData.data.map((acc, index) => (
           <div key={acc.id} className="bg-gray-800 rounded-xl p-6 shadow">
             <div
@@ -162,14 +162,13 @@ export default function AccountsList({
                 key={acc.id}
                 accountId={acc.id}
                 onAdd={addEntry}
-                isCreating={isCreating}
+                isCreating={isRemoving}
               />
             </div>
           </div>
-        ))
-      ) : (
-        <AccountSkeleton />
-      )}
+        ))}
+
+      {accountsData.isLoading && <AccountSkeleton />}
 
       {accountsData.data?.length === 0 && (
         <div className="bg-gray-800 rounded-xl p-6 shadow">

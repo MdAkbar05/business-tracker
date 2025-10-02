@@ -4,6 +4,15 @@
   --background: #ffffff;
   --foreground: #171717;
 }
+/* // breakpoint for screen  */
+@theme{
+  --breakpoint-sm: 340px;
+  --breakpoint-md: 668px;
+  --breakpoint-lg: 9024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+}
+
 
 @theme inline {
   --color-background: var(--background);

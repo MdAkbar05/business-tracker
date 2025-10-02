@@ -12,7 +12,7 @@ export default function PopupConfirm({ message, onConfirm, button }) {
   return (
     <>
       {/* Trigger button */}
-      <button onClick={() => setIsOpen(true)}>{button}</button>
+      <div onClick={() => setIsOpen(true)}>{button}</div>
 
       {/* Popup Modal */}
       {isOpen && (
