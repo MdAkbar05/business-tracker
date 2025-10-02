@@ -5,6 +5,9 @@ import LogoutButton from "./components/LogoutButton";
 import AccountsList from "./components/AccountsList";
 import LoginPopup from "./components/LoginPopup";
 import Loader from "./components/Loader";
+import Image from "next/image";
+
+import logo from "@/public/logo.svg";
 
 export default function AccountsApp() {
   const [accountsData, setAccountsData] = useState({
@@ -281,25 +284,29 @@ export default function AccountsApp() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-6">
-      <div className="flex flex-col md:flex-row justify-center items-center mb-6 gap-4">
-        <h1 className="text-3xl font-bold  text-center">
-          Business Tracker | {user?.name}
+    <>
+      <div className="flex justify-between items-center bg-gray-900 drop-shadow-sm gap-4 px-4 py-2">
+        <Image src={logo} alt="Logo" className="w-14 h-14 md:w-20 md:h-20" />
+        <h1 className="md:text-4xl text-blue-500 font-bold  text-center sm:text-balance">
+          Business Tracker |{" "}
+          <span className="text-green-600">{user?.name}</span>
         </h1>
         <LogoutButton onClick={handleLogout} />
       </div>
-      {/* 🔍 Search by Date */}
-      <div className="flex justify-center items-center">
-        <form
-          onSubmit={handleSearch}
-          className="mb-6 flex gap-3 justify-center items-center"
-        >
-          <div className="relative">
-            <input
-              type="date"
-              value={searchDate}
-              onChange={(e) => setSearchDate(e.target.value)}
-              className="
+
+      <div className="min-h-screen bg-gray-900 text-white p-6">
+        {/* 🔍 Search by Date */}
+        <div className="flex justify-center items-center">
+          <form
+            onSubmit={handleSearch}
+            className="mb-6 flex gap-3 justify-center items-center"
+          >
+            <div className="relative">
+              <input
+                type="date"
+                value={searchDate}
+                onChange={(e) => setSearchDate(e.target.value)}
+                className="
         block w-52 px-4 py-2
         bg-gray-50 text-gray-900
         border border-gray-300 rounded-md
@@ -307,94 +314,95 @@ export default function AccountsApp() {
         focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600
         transition-all duration-200
       "
-            />
-          </div>
+              />
+            </div>
 
-          <button
-            type="submit"
-            className="
+            <button
+              type="submit"
+              className="
       bg-blue-600 text-white font-medium
       px-4 py-2 rounded-md
       hover:bg-blue-500
       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1
       transition-colors duration-200
     "
-          >
-            Search
-          </button>
-        </form>
+            >
+              Search
+            </button>
+          </form>
+        </div>
+
+        {/* Summary */}
+        <div className="flex justify-around items-center flex-wrap md:gap-6 gap-3 md:mb-8 mb-4">
+          <div className="bg-red-700 p-1 md:p-4 rounded-xl text-center flex-2/12 min-w-44">
+            <h2 className="md:text-lg text-sm md:font-semibold font-medium">
+              Expenses
+            </h2>
+            <p className="md:text-2xl text-lg md:font-bold font-semibold">
+              {totalCost}
+            </p>
+          </div>
+
+          <div className="bg-green-700 p-1 md:p-4 rounded-xl text-center flex-2/12 min-w-44">
+            <h2 className="md:text-lg text-sm md:font-semibold font-medium">
+              Savings
+            </h2>
+            <p className="md:text-2xl text-lg md:font-bold font-semibold">
+              {totalSave}
+            </p>
+          </div>
+
+          <div className="bg-yellow-600 p-1 md:p-4 rounded-xl text-center flex-2/12 min-w-44">
+            <h2 className="md:text-lg text-sm md:font-semibold font-medium">
+              Additional Savings
+            </h2>
+            <p className="md:text-2xl text-lg md:font-bold font-semibold">
+              {totalExtra}
+            </p>
+          </div>
+
+          <div className="bg-blue-700 p-1 md:p-4 rounded-xl text-center flex-2/12 min-w-44">
+            <h2 className="md:text-lg text-sm md:font-semibold font-medium">
+              Net Revenue
+            </h2>
+            <p className="md:text-2xl text-lg md:font-bold font-semibold">
+              {totalRevenue}
+            </p>
+          </div>
+        </div>
+
+        {/* Accounts */}
+        <AccountsList
+          accountsData={accountsData}
+          user={user}
+          removeAccount={removeAccount}
+          removeItem={removeItem}
+          addEntry={addEntry}
+          isDeleting={isDeleting}
+          isRemoving={isRemoving}
+          isCreating={isCreating}
+        />
+
+        {/* Add new account */}
+        <div className="mt-8 bg-gray-800 p-6 rounded-xl shadow">
+          <h2 className="text-lg font-semibold mb-3">Add New Account</h2>
+          <div className="flex gap-4">
+            <input
+              type="date"
+              value={dateInput}
+              onChange={(e) => setDateInput(e.target.value)}
+              className="border p-2 rounded bg-gray-700 text-white"
+            />
+            <button
+              onClick={() => addAccount(user.id)}
+              className="bg-green-600 px-3 py-2 rounded hover:bg-green-500"
+              disabled={isCreating}
+            >
+              {isCreating ? <Loader /> : "Add Account"}
+            </button>
+          </div>
+        </div>
       </div>
-
-      {/* Summary */}
-      <div className="flex justify-around items-center flex-wrap md:gap-6 gap-3 md:mb-8 mb-4">
-        <div className="bg-red-700 p-1 md:p-4 rounded-xl text-center flex-2/12 min-w-44">
-          <h2 className="md:text-lg text-sm md:font-semibold font-medium">
-            Expenses
-          </h2>
-          <p className="md:text-2xl text-lg md:font-bold font-semibold">
-            {totalCost}
-          </p>
-        </div>
-
-        <div className="bg-green-700 p-1 md:p-4 rounded-xl text-center flex-2/12 min-w-44">
-          <h2 className="md:text-lg text-sm md:font-semibold font-medium">
-            Savings
-          </h2>
-          <p className="md:text-2xl text-lg md:font-bold font-semibold">
-            {totalSave}
-          </p>
-        </div>
-
-        <div className="bg-yellow-600 p-1 md:p-4 rounded-xl text-center flex-2/12 min-w-44">
-          <h2 className="md:text-lg text-sm md:font-semibold font-medium">
-            Additional Savings
-          </h2>
-          <p className="md:text-2xl text-lg md:font-bold font-semibold">
-            {totalExtra}
-          </p>
-        </div>
-
-        <div className="bg-blue-700 p-1 md:p-4 rounded-xl text-center flex-2/12 min-w-44">
-          <h2 className="md:text-lg text-sm md:font-semibold font-medium">
-            Net Revenue
-          </h2>
-          <p className="md:text-2xl text-lg md:font-bold font-semibold">
-            {totalRevenue}
-          </p>
-        </div>
-      </div>
-
-      {/* Accounts */}
-      <AccountsList
-        accountsData={accountsData}
-        user={user}
-        removeAccount={removeAccount}
-        removeItem={removeItem}
-        addEntry={addEntry}
-        isDeleting={isDeleting}
-        isRemoving={isRemoving}
-        isCreating={isCreating}
-      />
-
-      {/* Add new account */}
-      <div className="mt-8 bg-gray-800 p-6 rounded-xl shadow">
-        <h2 className="text-lg font-semibold mb-3">Add New Account</h2>
-        <div className="flex gap-4">
-          <input
-            type="date"
-            value={dateInput}
-            onChange={(e) => setDateInput(e.target.value)}
-            className="border p-2 rounded bg-gray-700 text-white"
-          />
-          <button
-            onClick={() => addAccount(user.id)}
-            className="bg-green-600 px-3 py-2 rounded hover:bg-green-500"
-            disabled={isCreating}
-          >
-            {isCreating ? <Loader /> : "Add Account"}
-          </button>
-        </div>
-      </div>
-    </div>
+    </>
   );
 }
