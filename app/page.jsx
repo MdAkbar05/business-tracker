@@ -27,7 +27,7 @@ export default function AccountsApp() {
 
   const [mode, setMode] = useState("login");
 
-  const [dateInput, setDateInput] = useState("");
+  const [dateInput, setDateInput] = useState(getDate());
 
   // ✅ Load user from localStorage at first
   useEffect(() => {
@@ -363,4 +363,23 @@ export default function AccountsApp() {
       </div>
     </div>
   );
+}
+
+const getDate = ()=>{
+const today = new Date();
+
+let month = today.getMonth() + 1; // Months are 0-indexed, so add 1
+let day = today.getDate();
+const year = today.getFullYear();
+
+// Add leading zero if month or day is less than 10
+if (month < 10) {
+  month = '0' + month;
+}
+if (day < 10) {
+  day = '0' + day;
+}
+
+const formattedDate = `${month}/${day}/${year}`;
+   return formattedDate;
 }
